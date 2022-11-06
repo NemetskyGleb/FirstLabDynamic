@@ -90,8 +90,6 @@ int main()
     substractWithCuda( c2, a, b, arraySize );
 
     PrintResult(a, b, c2, arraySize);
-
-    cudaError_t cudaStatus = cudaDeviceReset();
  
     delete[] c2, a, b;
     
@@ -117,7 +115,7 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
             cudaFree(dev_c);
             cudaFree(dev_a);
             cudaFree(dev_b);
-            std::exit(-1);
+            return;
         }
     };
 
@@ -149,7 +147,7 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     cudaEventRecord(start, 0);
 
     // Launch a kernel on the GPU with one thread for each element.
-    substractKernel<<<(int)ceil((float)size / T ), T >>> (dev_c, dev_a, dev_b, size);
+    substractKernel<<<(int)ceil((float)size / T ), T>>>(dev_c, dev_a, dev_b, size);
     
     cudaStatus = cudaEventRecord(stop, 0);
     checkError(cudaStatus);
@@ -159,7 +157,7 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     cudaStatus = cudaEventElapsedTime(&elapsedTime, start, stop);
     checkError(cudaStatus);
     // вывод информации
-    printf("Time spent executing by the GPU: %.2f millseconds\n", elapsedTime);
+    printf("Time spent executing by the GPU: %.2f milliseconds\n", elapsedTime);
     // уничтожение события
     cudaStatus = cudaEventDestroy(start);
     checkError(cudaStatus);
@@ -177,6 +175,9 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
 
     // Copy output vector from GPU buffer to host memory.
     cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
+    checkError(cudaStatus);
+    
+    cudaStatus = cudaDeviceReset();
     checkError(cudaStatus);
 
     // Free resources.

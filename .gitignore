@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/FirstLabDynamic/v16
+/FirstLabDynamic/x64/Debug
+/FirstLabDynamic
+/x64/Debug
