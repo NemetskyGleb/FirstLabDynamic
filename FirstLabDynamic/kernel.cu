@@ -52,11 +52,11 @@ void PrintResult(const int* a, const int* b, const int* c, uint32_t size)
     std::string result;
     
     result += "{" + std::to_string(a[0]) + ", " + std::to_string(a[1]) + ",..., " 
-               + std::to_string(a[size - 1]) + ", " + std::to_string(a[size]) + "} - ";
+               + std::to_string(a[size - 2]) + ", " + std::to_string(a[size - 1]) + "} - ";
     result += "{" + std::to_string(b[0]) + ", " + std::to_string(b[1]) + ",..., "
-               + std::to_string(b[size - 1]) + ", " + std::to_string(b[size]) + "} = ";
+               + std::to_string(b[size - 2]) + ", " + std::to_string(b[size - 1]) + "} = ";
     result += "{" + std::to_string(c[0]) + ", " + std::to_string(c[1]) + ",..., "
-               + std::to_string(c[size - 1]) + ", " + std::to_string(c[size]) + "}";
+               + std::to_string(c[size - 2]) + ", " + std::to_string(c[size - 1]) + "}";
 
     std::cout << result << std::endl;
 }
@@ -115,7 +115,10 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
             cudaFree(dev_c);
             cudaFree(dev_a);
             cudaFree(dev_b);
-            return;
+            if (c) {
+                delete c;
+            }
+            exit(-1);
         }
     };
 
