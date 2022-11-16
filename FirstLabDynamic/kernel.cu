@@ -151,13 +151,7 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
 
     // Launch a kernel on the GPU with one thread for each element.
     substractKernel<<<(int)ceil((float)size / T ), T>>>(dev_c, dev_a, dev_b, size);
-    
-    // уничтожение события
-    cudaStatus = cudaEventDestroy(start);
-    checkError(cudaStatus);
-    cudaStatus = cudaEventDestroy(stop);
-    checkError(cudaStatus);
-
+   
     // Check for any errors launching the kernel
     cudaStatus = cudaGetLastError();
     checkError(cudaStatus);
@@ -173,11 +167,18 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     
     cudaStatus = cudaEventRecord(stop, 0);
     checkError(cudaStatus);
-    // ожидание завершения работы ядра
+
     cudaStatus = cudaEventSynchronize(stop);
     checkError(cudaStatus);
     cudaStatus = cudaEventElapsedTime(&elapsedTime, start, stop);
     checkError(cudaStatus);
+
+    // уничтожение события
+    cudaStatus = cudaEventDestroy(start);
+    checkError(cudaStatus);
+    cudaStatus = cudaEventDestroy(stop);
+    checkError(cudaStatus);
+
     // вывод информации
     printf("Time spent executing by the GPU: %.2f milliseconds\n", elapsedTime);
     // Free resources.
