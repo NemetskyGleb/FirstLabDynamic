@@ -126,6 +126,15 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     cudaStatus = cudaSetDevice(0);
     checkError(cudaStatus);
 
+    // инициализируем события
+    cudaEvent_t start, stop;
+    float elapsedTime;
+    // создаем события
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    // запись события
+    cudaEventRecord(start, 0);
+
     // Allocate GPU buffers for three vectors (two input, one output).
     cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
     checkError(cudaStatus);
@@ -140,27 +149,9 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
     checkError(cudaStatus);
 
-    // инициализируем события
-    cudaEvent_t start, stop;
-    float elapsedTime;
-    // создаем события
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    // запись события
-    cudaEventRecord(start, 0);
-
     // Launch a kernel on the GPU with one thread for each element.
     substractKernel<<<(int)ceil((float)size / T ), T>>>(dev_c, dev_a, dev_b, size);
     
-    cudaStatus = cudaEventRecord(stop, 0);
-    checkError(cudaStatus);
-    // ожидание завершения работы ядра
-    cudaStatus = cudaEventSynchronize(stop);
-    checkError(cudaStatus);
-    cudaStatus = cudaEventElapsedTime(&elapsedTime, start, stop);
-    checkError(cudaStatus);
-    // вывод информации
-    printf("Time spent executing by the GPU: %.2f milliseconds\n", elapsedTime);
     // уничтожение события
     cudaStatus = cudaEventDestroy(start);
     checkError(cudaStatus);
@@ -180,10 +171,20 @@ void substractWithCuda(int* c, const int* a, const int* b, uint32_t size)
     cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
     checkError(cudaStatus);
     
+    cudaStatus = cudaEventRecord(stop, 0);
+    checkError(cudaStatus);
+    // ожидание завершения работы ядра
+    cudaStatus = cudaEventSynchronize(stop);
+    checkError(cudaStatus);
+    cudaStatus = cudaEventElapsedTime(&elapsedTime, start, stop);
+    checkError(cudaStatus);
+    // вывод информации
+    printf("Time spent executing by the GPU: %.2f milliseconds\n", elapsedTime);
+    // Free resources.
+
     cudaStatus = cudaDeviceReset();
     checkError(cudaStatus);
 
-    // Free resources.
     cudaFree(dev_c);
     cudaFree(dev_a);
     cudaFree(dev_b);
